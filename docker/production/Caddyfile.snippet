@@ -1,0 +1,19 @@
+# Caddy configuration snippet for OpenKos with PHP2Shell mitigation
+# Suitable for deployment on VPS (Contabo / Naracitrasolusindo)
+
+openkos.example.com {
+    encode gzip zstd
+
+    # Block CVE-2026-109618 exploit attempts via multipart progress query/headers
+    @malicious_upload_progress {
+        header PHP_SESSION_UPLOAD_PROGRESS *
+        query *PHP_SESSION_UPLOAD_PROGRESS*
+    }
+    respond @malicious_upload_progress "Forbidden" 403
+
+    # Reverse proxy to OpenKos container / backend
+    reverse_proxy 127.0.0.1:8080 {
+        header_down -Server
+        header_down -X-Powered-By
+    }
+}
